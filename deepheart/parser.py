@@ -147,7 +147,7 @@ class PCG:
             embedding_size = 10611
             X = np.zeros([self.n_samples, embedding_size])
 
-        for idx, wavfname in enumerate(wav_file_names[:100]):
+        for idx, wavfname in enumerate(wav_file_names):
 
             if (idx+1) % 100 == 0:
                 print('Processing {} from {} wav files!'.format(idx+1,len(wav_file_names)))

@@ -5,7 +5,7 @@ from datetime import datetime
 
 class CNN:
     def __init__(self, pcg, nclasses=2, learning_rate=0.001,
-                 epochs=5, batch_size=32, dropout=0.75, base_dir="/tmp",
+                 epochs=5, batch_size=100, dropout=0.75, base_dir="/tmp",
                  model_name="cnn"):
         self.pcg = pcg
         self.nclasses = nclasses

@@ -5,7 +5,7 @@ from datetime import datetime
 
 class CNN:
     def __init__(self, pcg, nclasses=2, learning_rate=0.001,
-                 epochs=5, batch_size=100, dropout=0.75, base_dir="/tmp",
+                 epochs=5, batch_size=32, dropout=0.75, base_dir="/tmp",
                  model_name="cnn"):
         self.pcg = pcg
         self.nclasses = nclasses
@@ -68,7 +68,7 @@ class CNN:
             pred = self.model1D(X, weights, biases, do_drop)
 
         with tf.name_scope('cost'):
-            cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y, name='cost'))
+            cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y, name='cost'))
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(cost)
 
         dim = tf.shape(y)[0]
@@ -77,21 +77,21 @@ class CNN:
             # sensitivity = correctly predicted abnormal / total number of actual abnormal
             abnormal_idxs = tf.cast(tf.equal(tf.argmax(pred, 1), 1), tf.float32)
             pred1d = tf.reshape(tf.slice(y, [0, 1], [dim, 1]), [-1])
-            abn = tf.mul(pred1d, abnormal_idxs)
+            abn = tf.multiply(pred1d, abnormal_idxs)
             sensitivity = tf.reduce_sum(abn) / tf.reduce_sum(pred1d)
-            tf.scalar_summary('sensitivity', sensitivity)
+            tf.summary.scalar('sensitivity', sensitivity)
 
         with tf.name_scope('specificity'):
             # specificity = correctly predicted normal / total number of actual normal
             normal_idxs = tf.cast(tf.equal(tf.argmax(pred, 1), 0), tf.float32)
             pred1d_n = tf.reshape(tf.slice(y, [0, 0], [dim, 1]), [-1])
-            normal = tf.mul(pred1d_n, normal_idxs)
+            normal = tf.multiply(pred1d_n, normal_idxs)
             specificity = tf.reduce_sum(normal) / tf.reduce_sum(pred1d_n)
-            tf.scalar_summary('specificity', sensitivity)
+            tf.summary.scalar('specificity', sensitivity)
 
         # Physionet score is the mean of sensitivity and specificity
         score = (sensitivity + specificity) / 2.0
-        tf.scalar_summary('score', score)
+        tf.summary.scalar('score', score)
 
         init = tf.initialize_all_variables()
 
@@ -99,8 +99,8 @@ class CNN:
         with tf.Session() as sess:
             sess.run(init)
 
-            merged = tf.merge_all_summaries()
-            train_writer = tf.train.SummaryWriter(os.path.join(self.base_dir, 'train'), sess.graph)
+            merged = tf.summary.merge_all()
+            train_writer = tf.summary.FileWriter(os.path.join(self.base_dir, 'train'), sess.graph)
 
             for epoch in range(self.epochs):
                 avg_cost = 0

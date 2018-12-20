@@ -1,13 +1,14 @@
 import os
 import pickle
 import numpy as np
+import tensorflow as tf
 from scipy.io import wavfile
 from scipy.fftpack import fft
 from scipy.signal import butter, lfilter
 from sklearn.preprocessing import normalize
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from collections import namedtuple
-from sklearn.cross_validation import check_random_state
+from sklearn.utils import check_random_state
 
 
 class PCG:
@@ -66,7 +67,7 @@ class PCG:
         """
         np.save(os.path.join(save_path, "X.npy"), self.X)
         np.save(os.path.join(save_path, "y.npy"), self.y)
-        with open( os.path.join(save_path, "meta"), "w") as fout:
+        with open(os.path.join(save_path, "meta"), "wb") as fout:
             pickle.dump((self.basepath, self.class_name_to_id, self.nclasses,
                          self.n_samples, self.random_state), fout)
 
@@ -133,7 +134,7 @@ class PCG:
 
                         self.n_samples += 1
                     except InvalidHeaderFileException as e:
-                        print e
+                        print(e)
 
         if doFFT:
             fft_embedding_size = 400
@@ -146,7 +147,10 @@ class PCG:
             embedding_size = 10611
             X = np.zeros([self.n_samples, embedding_size])
 
-        for idx, wavfname in enumerate(wav_file_names):
+        for idx, wavfname in enumerate(wav_file_names[:100]):
+
+            if (idx+1) % 100 == 0:
+                print('Processing {} from {} wav files!'.format(idx+1,len(wav_file_names)))
             rate, wf = wavfile.read(wavfname)
             wf = normalize(wf.reshape(1, -1))
 

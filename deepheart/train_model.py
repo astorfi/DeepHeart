@@ -16,7 +16,8 @@ def load_and_train_model(model_path, load_pretrained):
     cnn.train()
 
 if __name__ == '__main__':
-    data_path = sys.argv[1]
+    # data_path = sys.argv[1]
+    data_path = '/home/sina/training/'
 
     load_pretrained = False
     if len(sys.argv) == 3:
